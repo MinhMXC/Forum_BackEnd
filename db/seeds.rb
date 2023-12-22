@@ -11,45 +11,16 @@ Tag.create!(
   }
 )
 
-Post.create!(
-  {
-    title: "bruh",
-    body: "bruh",
-    user_id: 1,
-    tag_ids: [1]
-  }
-)
+def create_post(n)
+  title = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+  text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce blandit, sem nec pulvinar gravida, sapien dui placerat sem, id malesuada libero elit sed sem. Morbi ultricies augue sed arcu tempor egestas. Nulla porta neque eget ullamcorper ullamcorper. Phasellus congue lorem purus, ut posuere sapien ultricies aliquet. Integer aliquam fermentum iaculis. Donec maximus sem ut fringilla pellentesque. Morbi feugiat nisi nec felis pharetra, sed porta mauris bibendum. Nunc elit nunc, sodales sed placerat eu, maximus vel metus. Aenean a finibus eros. Nunc ut purus egestas orci consectetur egestas. Quisque laoreet molestie sapien et euismod. Suspendisse tincidunt viverra sapien ac rhoncus. Donec maximus fringilla mattis."
 
-comment1 = Comment.create!(
-  {
-    body: "bruh",
-    user_id: 1,
-    post_id: 1
-  }
-)
+  for i in 1..n
+    post = Post.create!({ title: title, body: text, user_id: 1, tag_ids: [1] })
+    comment1 = Comment.create!( {  body: text,  user_id: 1,  post: post })
+    comment2 = Comment.create!( {  body: text,  user_id: 1,  post: post, comment: comment1 })
+    Comment.create!([ {body: text, user_id: 1, post: post}, {body: text, user_id: 1, post: post, comment: comment1}, {body: text, user_id: 1, post: post, comment: comment2}, ])
+  end
+end
 
-comment2 = Comment.create!(
-  {
-    body: "bruh1",
-    user_id: 1,
-    comment: comment1
-  }
-)
-
-Comment.create!([
-  {
-    body: "bruh",
-    user_id: 1,
-    post_id: 1
-  },
-  {
-    body: "bruh1",
-    user_id: 1,
-    comment: comment1
-  },
-  {
-    body: "bruh2",
-    user_id: 1,
-    comment: comment2
-  }
-])
+create_post(2)

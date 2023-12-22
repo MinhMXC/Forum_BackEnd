@@ -1,8 +1,11 @@
 class UsersController < ApplicationController
+  before_action :authenticate_user!, only: [:update, :destroy]
+
   def show
     user = find_user(params[:id])
     render json: { status: "success",
-                   data: ActiveModelSerializers::SerializableResource.new(user, include: ["posts", "comments"])
+                   data: ActiveModelSerializers::SerializableResource
+                           .new(user, include: ["posts", "comments", "posts.user", "comments.user"])
     }, status: :ok if user
   end
 
@@ -12,7 +15,8 @@ class UsersController < ApplicationController
 
     if user.update(user_update_params)
       render json: { status: "success",
-                     data: ActiveModelSerializers::SerializableResource.new(user, include: ["username", "image", "bio"])
+                     data: ActiveModelSerializers::SerializableResource
+                             .new(user, include: ["username", "image", "bio"])
       }, status: :ok
     else
       render json: { status: "error", message: user.errors.full_messages }, status: :bad_request

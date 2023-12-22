@@ -1,4 +1,8 @@
 class PostsController < ApplicationController
+  before_action :authenticate_user!, only: [:create, :update, :destroy]
+  def index
+    render json: { status: "success", data: ActiveModelSerializers::SerializableResource.new(Post.all, include: ['user', 'tags']) }, status: :ok
+  end
   def show
     post = find_post(params[:id])
     render json: { status: "success",

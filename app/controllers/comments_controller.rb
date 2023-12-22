@@ -1,4 +1,5 @@
 class CommentsController < ApplicationController
+  before_action :authenticate, only: [:create, :update, :destroy]
   def show
     comment = find_comment(params[:id])
     render json: { status: "success",
@@ -56,6 +57,12 @@ class CommentsController < ApplicationController
 
   def comment_update_params
     params.require(:comment).permit(:body)
+  end
+
+  def authenticate
+    unless user_signed_in?
+      render json: { status: "error", message: "You must be signed in!" }
+    end
   end
 
   def find_comment(id)
