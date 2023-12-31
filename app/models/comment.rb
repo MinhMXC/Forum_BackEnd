@@ -3,7 +3,11 @@ class Comment < ApplicationRecord
   belongs_to :post, counter_cache: true
   belongs_to :comment, optional: true
   has_many :comments
+  has_many :comments_likes
+  has_many :comments_dislikes
 
-  validates :body, :user_id, presence: true, comparison: { other_than: "[deleted]" }
+  validates :user_id, presence: true
+  validates :body, comparison: { other_than: "[deleted]" }
+
   validates_length_of :body, maximum: 20000
 end

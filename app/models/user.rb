@@ -11,5 +11,8 @@ class User < ActiveRecord::Base
 
   has_many :posts
   has_many :comments
-  validates :username, presence: true, comparison: { other_than: "[deleted]" }
+
+  # comparison also check for blank
+  validates :username, comparison: { other_than: "[deleted]" }
+  validates :username, uniqueness: { case_sensitive: true }
 end

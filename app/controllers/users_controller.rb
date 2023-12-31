@@ -1,12 +1,20 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user!, only: [:update, :destroy]
+  before_action :authenticate, only: [:update, :destroy]
 
   def show
     user = find_user(params[:id])
     render json: { status: "success",
                    data: ActiveModelSerializers::SerializableResource
-                           .new(user, include: ["posts", "comments", "posts.user", "comments.user"])
+                           .new(user, include: ["posts", "comments", "posts.user", "posts.tags", "comments.user"])
     }, status: :ok if user
+  end
+
+  def showSimple
+    if user_signed_in?
+      render json: { status: "success", data: current_user }, status: :ok
+    else
+      render json: { status: "error", message: "User Not Signed In" }, status: :unauthorized
+    end
   end
 
   def update
@@ -41,6 +49,12 @@ class UsersController < ApplicationController
   private
   def user_update_params
     params.require(:user).permit(:image, :bio)
+  end
+
+  def authenticate
+    unless user_signed_in?
+      render json: { status: "error", message: "You must be signed in!" }
+    end
   end
 
   def find_user(id)

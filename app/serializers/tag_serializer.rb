@@ -1,3 +1,3 @@
 class TagSerializer < ActiveModel::Serializer
-  attributes :tag_text, :colour
+  attributes :id, :tag_text, :colour
 end
