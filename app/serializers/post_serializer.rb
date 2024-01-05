@@ -1,5 +1,5 @@
 class PostSerializer < ActiveModel::Serializer
-  attributes :id, :title, :body, :posts_likes_count, :posts_dislikes_count, :deleted, :image, :visited, :comments_count, :userState, :owner, :created_at, :updated_at
+  attributes :id, :title, :body, :posts_likes_count, :posts_dislikes_count, :image, :visited, :comments_count, :userState, :owner, :created_at, :updated_at
   has_one :user, serializer: UserSimpleSerializer
   has_many :comments
   has_many :tags
@@ -33,7 +33,7 @@ class PostSerializer < ActiveModel::Serializer
   end
 
   def user
-    if object.deleted
+    if object.user == nil
       User.new({:id => -1, :username => "[deleted]", :image => "[deleted]"})
     else
       object.user

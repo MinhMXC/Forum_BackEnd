@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_31_115509) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_03_074051) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -18,12 +18,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_31_115509) do
     t.text "body", null: false
     t.integer "comments_likes_count", default: 0, null: false
     t.integer "comments_dislikes_count", default: 0, null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.bigint "post_id", null: false
     t.bigint "comment_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "deleted", default: false, null: false
     t.index ["comment_id"], name: "index_comments_on_comment_id"
     t.index ["post_id"], name: "index_comments_on_post_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
@@ -58,12 +57,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_31_115509) do
     t.integer "posts_likes_count", default: 0, null: false
     t.integer "posts_dislikes_count", default: 0, null: false
     t.text "image"
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "visited", default: false, null: false
     t.integer "comments_count", default: 0
-    t.boolean "deleted", default: false, null: false
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
@@ -107,7 +105,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_31_115509) do
     t.json "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "deleted", default: false, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -116,14 +113,14 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_31_115509) do
   end
 
   add_foreign_key "comments", "posts"
-  add_foreign_key "comments", "users"
+  add_foreign_key "comments", "users", on_delete: :nullify
   add_foreign_key "comments_dislikes", "comments"
   add_foreign_key "comments_dislikes", "users"
   add_foreign_key "comments_likes", "comments"
   add_foreign_key "comments_likes", "users"
   add_foreign_key "post_tags", "posts"
   add_foreign_key "post_tags", "tags"
-  add_foreign_key "posts", "users"
+  add_foreign_key "posts", "users", on_delete: :nullify
   add_foreign_key "posts_dislikes", "posts"
   add_foreign_key "posts_dislikes", "users"
   add_foreign_key "posts_likes", "posts"

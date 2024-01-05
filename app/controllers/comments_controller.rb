@@ -43,7 +43,7 @@ class CommentsController < ApplicationController
     return unless comment
 
     if comment[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't update other people comments!" }
+      render json: { status: "error", message: "Naughty Naught! Don't update other people's comments!" }
       return
     end
 
@@ -75,12 +75,12 @@ class CommentsController < ApplicationController
     return unless comment
 
     if comment[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't update other people comments!" }, status: :unauthorized
+      render json: { status: "error", message: "Naughty Naught! Don't update other people's comments!" }, status: :unauthorized
       return
     end
 
     comment.update_attribute(:body, "[deleted]")
-    comment.update_attribute(:deleted, true)
+    comment.update_attribute(:user_id, nil)
     render json: { status: "success", data: comment }, status: :ok
   end
 

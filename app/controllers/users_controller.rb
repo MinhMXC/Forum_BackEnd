@@ -21,6 +21,11 @@ class UsersController < ApplicationController
     user = find_user(params[:id])
     return unless user
 
+    if user[:id] != current_user[:id]
+      render json: { status: "error", message: "Naughty Naught! Don't update other people's accounts!" }
+      return
+    end
+
     if user.update(user_update_params)
       render json: { status: "success",
                      data: ActiveModelSerializers::SerializableResource
@@ -35,15 +40,13 @@ class UsersController < ApplicationController
     user = find_user(params[:id])
     return unless user
 
-    atr = {
-      image: "[deleted]",
-      bio: "[deleted]",
-      email: "[deleted]@gmail.com",
-      encrypted_password: "[deleted]"
-    }
-    user.update!(atr)
-    user.update_attribute(:username, "[deleted]")
-    render json: { status: "success", data: user }, status: :ok
+    if user[:id] != current_user[:id]
+      render json: { status: "error", message: "Naughty Naught! Don't delete other people's accounts!" }
+      return
+    end
+
+    user.destroy
+    render json: { status: "success", data: {} }, status: :ok
   end
 
   private

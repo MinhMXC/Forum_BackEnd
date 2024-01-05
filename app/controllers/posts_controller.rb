@@ -1,9 +1,26 @@
 class PostsController < ApplicationController
   before_action :authenticate, only: [:create, :update, :destroy, :like, :dislike]
   def index
+    if params[:advanced] == nil
+      posts = Post.all
+    elsif params[:advanced] == "true"
+      posts = Post.where("title ILIKE ? AND body ILIKE ?", "%#{params[:title]}%", "%#{params[:body]}%")
+
+      unless params[:tags].blank?
+        tags = params[:tags].split(/,/, -1)
+        posts = posts.joins(:tags)
+                     .where(:tags => { tag_text: [tags] })
+                     .having("count(tags.id) = ?", tags.count).group("posts.id")
+      end
+    else
+      posts = Post.where("(title||body) ILIKE ?", "%#{params[:search]}%")
+    end
+
+    # posts = posts.sort_by{ |p| p[:posts_likes_count] }.reverse!
+
     render json: { status: "success",
                    data: ActiveModelSerializers::SerializableResource
-                           .new(Post.all, include: ["user", "tags"], current_user: current_user) }, status: :ok
+                           .new(posts, include: ["user", "tags"], current_user: current_user) }, status: :ok
   end
   def show
     post = find_post(params[:id])
@@ -35,7 +52,7 @@ class PostsController < ApplicationController
     return unless post
 
     if post[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't update other people posts!" }
+      render json: { status: "error", message: "Naughty Naught! Don't update other people's posts!" }
       return
     end
 
@@ -65,7 +82,7 @@ class PostsController < ApplicationController
     return unless post
 
     if post[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't delete other people posts!" }, status: :unauthorized
+      render json: { status: "error", message: "Naughty Naught! Don't delete other people's posts!" }, status: :unauthorized
       return
     end
 
@@ -75,7 +92,8 @@ class PostsController < ApplicationController
     PostTag.where(post_id: post[:id]).destroy_all
     post.update_attribute(:title, "[deleted]")
     post.update_attribute(:body, "[deleted]")
-    post.update_attribute(:deleted, true)
+    post.update_attribute(:image, null)
+    post.update_attribute(:user_id, nil)
     render json: { status: "success", data: post }, status: :ok
   end
 

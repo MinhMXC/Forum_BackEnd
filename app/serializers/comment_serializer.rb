@@ -1,5 +1,5 @@
 class CommentSerializer < ActiveModel::Serializer
-  attributes :id, :body, :comments_likes_count, :comments_dislikes_count, :deleted, :userState, :owner, :post_id, :created_at, :updated_at
+  attributes :id, :body, :comments_likes_count, :comments_dislikes_count, :userState, :owner, :post_id, :created_at, :updated_at
   has_one :user, serializer: UserSimpleSerializer
   has_many :comments
 
@@ -29,7 +29,7 @@ class CommentSerializer < ActiveModel::Serializer
   end
 
   def user
-    if object.deleted
+    if object.user == nil
       User.new({:id => -1, :username => "[deleted]", :image => "[deleted]"})
     else
       object.user
