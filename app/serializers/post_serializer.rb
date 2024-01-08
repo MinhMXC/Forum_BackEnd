@@ -9,7 +9,7 @@ class PostSerializer < ActiveModel::Serializer
   end
 
   # userState: -2 => not logged in, -1 => dislike, 0 => none, 1 => like
-  def userState()
+  def userState
     current_user = @instance_options[:current_user]
     post_id = object.id
 
@@ -21,6 +21,19 @@ class PostSerializer < ActiveModel::Serializer
       -1
     else
       0
+    end
+  end
+
+  def visited
+    current_user = @instance_options[:current_user]
+    if current_user == nil
+      return false
+    end
+
+    if Viewed.find_by(user_id: current_user[:id], post_id: object.id)
+      true
+    else
+      false
     end
   end
 

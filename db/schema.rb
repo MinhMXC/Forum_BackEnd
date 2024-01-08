@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_03_074051) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_07_105038) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -60,7 +60,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_03_074051) do
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "visited", default: false, null: false
     t.integer "comments_count", default: 0
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
@@ -112,6 +111,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_03_074051) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
+  create_table "vieweds", primary_key: ["user_id", "post_id"], force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "post_id", null: false
+    t.index ["post_id"], name: "index_vieweds_on_post_id"
+    t.index ["user_id"], name: "index_vieweds_on_user_id"
+  end
+
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users", on_delete: :nullify
   add_foreign_key "comments_dislikes", "comments"
@@ -125,4 +131,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_03_074051) do
   add_foreign_key "posts_dislikes", "users"
   add_foreign_key "posts_likes", "posts"
   add_foreign_key "posts_likes", "users"
+  add_foreign_key "vieweds", "posts"
+  add_foreign_key "vieweds", "users"
 end

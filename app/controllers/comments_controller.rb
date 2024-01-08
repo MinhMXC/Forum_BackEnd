@@ -1,26 +1,32 @@
+#noinspection RubyResolve
 class CommentsController < ApplicationController
-  before_action :authenticate, only: [:create, :update, :destroy, :like]
+  before_action :authenticate, except: [:show]
+  before_action except: [:create] do
+    find_comment(params[:id])
+  end
+  before_action :check_correct_user, only: [:update, :destroy]
+
   def show
-    comment = find_comment(params[:id])
     render json: { status: "success",
-                   data: ActiveModelSerializers::SerializableResource.new(comment, current_user: current_user)
-    }, status: :ok if comment
+                   data: ActiveModelSerializers::SerializableResource.new(@comment, current_user: current_user)
+    }, status: :ok
   end
 
   def create
     comment = Comment.new(comment_create_params)
+    comment[:body] = comment[:body].strip
     comment[:user_id] = current_user[:id]
 
     post = Post.find(comment[:post_id])
-    if post[:deleted]
+    if post[:title] == "[deleted]"
       render json: { status: "error", message: "Can't reply to deleted posts!" }, status: :bad_request
       return
     end
 
     if comment[:comment_id] != nil
-      comment_parent = Comment.find(comment[:comment_id])
+      comment_parent = Comment.find_by_id(comment[:comment_id])
       if comment_parent
-        if comment_parent[:deleted]
+        if comment_parent[:body] == "[deleted]"
           render json: { status: "error", message: "Can't reply to deleted comments!" }, status: :bad_request
           return
         end
@@ -39,88 +45,54 @@ class CommentsController < ApplicationController
 
   #Ensure Patch Request Only
   def update
-    comment = find_comment(params[:id])
-    return unless comment
-
-    if comment[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't update other people's comments!" }
-      return
-    end
-
-    if comment[:deleted]
-      render json: { status: "error", message: "Can't update deleted comments!" }
-      return
-    end
-
     begin
       # filling in missing params
-      comment_update_params[:comment_id] = comment[:comment_id]
-      comment_update_params[:post_id]    = comment[:post_id]
-      comment_update_params[:user_id]    = comment[:user_id]
+      comment_update_params[:comment_id] = @comment[:comment_id]
+      comment_update_params[:post_id]    = @comment[:post_id]
+      comment_update_params[:user_id]    = @comment[:user_id]
 
-      comment.update!(comment_update_params)
+      @comment.update!(comment_update_params)
     rescue ActionController::ParameterMissing
-      render json: { status: "error", message: "'Body' Parameter Missing" }, status: :bad_request and return
+      render json: { status: "error", message: "'Body' Parameter Missing" }, status: :bad_request
+      return
     rescue ActiveRecord::RecordInvalid
-      render json: { status: "error", message: comment.errors.full_messages }, status: :bad_request and return
+      render json: { status: "error", message: @comment.errors.full_messages }, status: :bad_request
+      return
     end
 
-    render json: { status: "success", data: comment }, status: :ok
+    render json: { status: "success", data: @comment }, status: :ok
   end
 
   def destroy
     # This will not delete replies to this comments
-
-    comment = find_comment(params[:id])
-    return unless comment
-
-    if comment[:user_id] != current_user[:id]
-      render json: { status: "error", message: "Naughty Naught! Don't update other people's comments!" }, status: :unauthorized
-      return
-    end
-
-    comment.update_attribute(:body, "[deleted]")
-    comment.update_attribute(:user_id, nil)
-    render json: { status: "success", data: comment }, status: :ok
+    @comment.update_attribute(:body, "[deleted]")
+    @comment.update_attribute(:user_id, nil)
+    render json: { status: "success", data: @comment }, status: :ok
   end
 
   def like
-    comment = find_comment(params[:id])
-    return unless comment
-
-    like = CommentsLike.find_by(user_id: current_user[:id], comment_id: params[:id])
+    like = CommentsLike.find_by(user_id: current_user[:id], comment_id: @comment[:id])
 
     if like
       like.destroy
     else
-      CommentsDislike.find_by(user_id: current_user[:id], comment_id: params[:id]).try(:destroy)
-      CommentsLike.create(user_id: current_user[:id], comment_id: params[:id])
+      CommentsDislike.find_by(user_id: current_user[:id], comment_id: @comment[:id]).try(:destroy)
+      CommentsLike.create(user_id: current_user[:id], comment_id: @comment[:id])
     end
   end
 
   def dislike
-    comment = find_comment(params[:id])
-    return unless comment
-
-    dislike = CommentsDislike.find_by(user_id: current_user[:id], comment_id: params[:id])
+    dislike = CommentsDislike.find_by(user_id: current_user[:id], comment_id: @comment[:id])
 
     if dislike
       dislike.destroy
     else
-      CommentsLike.find_by(user_id: current_user[:id], comment_id: params[:id]).try(:destroy)
-      CommentsDislike.create(user_id: current_user[:id], comment_id: params[:id])
+      CommentsLike.find_by(user_id: current_user[:id], comment_id: @comment[:id]).try(:destroy)
+      CommentsDislike.create(user_id: current_user[:id], comment_id: @comment[:id])
     end
   end
 
   private
-  def comment_create_params
-    params.require(:comment).permit(:body, :comment_id, :post_id)
-  end
-
-  def comment_update_params
-    params.require(:comment).permit(:body)
-  end
-
   def authenticate
     unless user_signed_in?
       render json: { status: "error", message: "You must be signed in!" }
@@ -129,10 +101,25 @@ class CommentsController < ApplicationController
 
   def find_comment(id)
     begin
-      comment = Comment.find(id)
+      @comment = Comment.find(id)
     rescue ActiveRecord::ActiveRecordError
-      render json: { status: "error", message: "Comment Not Found" }, status: :not_found and return
+      render json: { status: "error", message: "Comment Not Found" }, status: :not_found
+      return
     end
-    comment
+    @comment
+  end
+
+  def check_correct_user
+    if @comment[:user_id] != current_user[:id]
+      render json: { status: "error", message: "Naughty Naughty! Don't touch other people's comments!" }
+    end
+  end
+
+  def comment_create_params
+    params.require(:comment).permit(:body, :comment_id, :post_id)
+  end
+
+  def comment_update_params
+    params.require(:comment).permit(:body)
   end
 end

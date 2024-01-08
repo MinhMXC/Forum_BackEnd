@@ -12,6 +12,12 @@ class User < ActiveRecord::Base
   has_many :posts
   has_many :comments
 
+  has_many :vieweds, dependent: :delete_all
+  has_many :comments_likes, dependent: :delete_all
+  has_many :comments_dislikes, dependent: :delete_all
+  has_many :posts_likes, dependent: :delete_all
+  has_many :posts_dislikes, dependent: :delete_all
+
   # comparison also check for blank
   validates :username, comparison: { other_than: "[deleted]" }
   validates :username, uniqueness: { case_sensitive: true }

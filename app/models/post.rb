@@ -11,5 +11,5 @@ class Post < ApplicationRecord
   validates :body, comparison: { other_than: "[deleted]" }
 
   validates_length_of :title, maximum: 300
-  validates_length_of :body,  maximum: 40000
+  validates_length_of :body, maximum: 40000
 end
