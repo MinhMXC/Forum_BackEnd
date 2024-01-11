@@ -8,6 +8,7 @@ class Comment < ApplicationRecord
 
   validates :user_id, presence: true
   validates :body, comparison: { other_than: "[deleted]" }
+  validates :body, comparison: { other_than: "<p></p>" }
 
   validates_length_of :body, maximum: 20000
 end

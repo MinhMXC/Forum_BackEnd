@@ -13,8 +13,12 @@ class CommentsController < ApplicationController
   end
 
   def create
+    #sanitising input
+    comment_create_params[:body] = Sanitize.clean(comment_create_params[:body].strip)
+
     comment = Comment.new(comment_create_params)
-    comment[:body] = comment[:body].strip
+
+    # filling in missing params
     comment[:user_id] = current_user[:id]
 
     post = Post.find(comment[:post_id])
@@ -37,7 +41,7 @@ class CommentsController < ApplicationController
     end
 
     if comment.save
-      render json: { status: "success", data: comment }, status: :created
+      render json: { status: "success", data: ActiveModelSerializers::SerializableResource.new(comment, current_user: current_user) }, status: :created
     else
       render json: { status: "error", message: comment.errors.full_messages }, status: :bad_request
     end
@@ -46,10 +50,11 @@ class CommentsController < ApplicationController
   #Ensure Patch Request Only
   def update
     begin
-      # filling in missing params
+      # filling in missing params, sanitising input
       comment_update_params[:comment_id] = @comment[:comment_id]
       comment_update_params[:post_id]    = @comment[:post_id]
       comment_update_params[:user_id]    = @comment[:user_id]
+      comment_update_params[:body]       = Sanitize.clean(comment_update_params[:body].strip)
 
       @comment.update!(comment_update_params)
     rescue ActionController::ParameterMissing
@@ -60,7 +65,8 @@ class CommentsController < ApplicationController
       return
     end
 
-    render json: { status: "success", data: @comment }, status: :ok
+    render json: { status: "success",
+                   data: ActiveModelSerializers::SerializableResource.new(@comment, current_user: current_user) }, status: :ok
   end
 
   def destroy

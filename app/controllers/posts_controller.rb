@@ -41,9 +41,14 @@ class PostsController < ApplicationController
 
   def create
     begin
+      #sanitising input
+      post_create_params[:body] = Sanitize.clean(post_create_params[:body].strip)
+
       post = Post.create(post_create_params)
-      post[:body] = post[:body].strip
+
+      # filling in missing params
       post[:user_id] = current_user[:id]
+
     rescue ActiveRecord::RecordNotFound
       render json: { status: "error", message: "Tags Not Found" }, status: :bad_request
       return
@@ -60,8 +65,10 @@ class PostsController < ApplicationController
 
   def update
     begin
-      # filling in missing params
+      # filling in missing params, sanitising input
+      post_update_params[:body] = Sanitize.clean(post_update_params[:body].strip)
       post_update_params[:user_id] = @post[:user_id]
+
       @post.update!(post_update_params)
     rescue ActionController::ParameterMissing
       render json: { status: "error", message: @post.errors.full_messages }, status: :bad_request
