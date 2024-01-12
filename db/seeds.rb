@@ -103,8 +103,9 @@ Post.create!({
 })
 
 Post.create!({
-  title: "Weebs and Shut-In programmers finally created their ideal girlfriend using AI",
-  body: "They had to destroyed it in 1 month because they were losing touch with reality :)",
+  title: "Man wins best female streamer using AI",
+  body: "https://www.youtube.com/@Neurosama",
+  image: "https://i.redd.it/neuro-sama-the-ai-vtuber-becomes-the-number-1-female-v0-dd7jlu6bpa9c1.png?width=1487&format=png&auto=webp&s=8fb3546af898981d6798797ab8d765e61d580c14",
   user_id: 1,
   tag_ids: [6]
 })
