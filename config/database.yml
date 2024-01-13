@@ -82,6 +82,8 @@ test:
 #
 production:
   <<: *default
-  database: forum_api2_production
-  username: forum_api2
-  password: <%= ENV["FORUM_API2_DATABASE_PASSWORD"] %>
+  adapter: postgresql
+  encoding: unicode
+  host: db
+  username: postgres
+  password: 123456abc

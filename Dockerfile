@@ -16,6 +16,10 @@ ENV RAILS_ENV="production" \
 ENV RAILS_SERVE_STATIC_FILES true
 ENV RAILS_LOG_TO_STDOUT true
 
+# replace with your own key
+ARG RAILS_MASTER_KEY="d4f744259ac00e69ef089dcefd2d0b28"
+ENV RAILS_MASTER_KEY=$RAILS_MASTER_KEY
+
 
 # Throw-away build stage to reduce size of final image
 FROM base as build
